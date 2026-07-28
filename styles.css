@@ -110,6 +110,7 @@ input[type="file"] { font-size: 0.9rem; color: var(--text-soft); }
   align-items: center;
   gap: 12px;
 }
+.image-preview[hidden] { display: none; }
 .image-preview img {
   max-width: 120px;
   max-height: 120px;
