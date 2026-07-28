@@ -1,0 +1,236 @@
+:root {
+  --bg: #f5f2ec;
+  --surface: #ffffff;
+  --text: #2f2b26;
+  --text-soft: #6b6459;
+  --accent: #7a6a52;
+  --accent-dark: #5c4f3d;
+  --line: #e4ddd1;
+  --danger: #a8503f;
+  --shadow: 0 6px 24px rgba(60, 50, 35, 0.08);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.7;
+}
+
+/* Header */
+.site-header {
+  background: linear-gradient(160deg, #efe9df 0%, #e7ddcb 100%);
+  border-bottom: 1px solid var(--line);
+  padding: 64px 20px 56px;
+  text-align: center;
+}
+.header-kicker {
+  margin: 0 0 10px;
+  letter-spacing: 0.3em;
+  font-size: 0.78rem;
+  color: var(--accent);
+  text-transform: none;
+}
+.header-title {
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 800;
+  font-size: 2.6rem;
+  margin: 0 0 14px;
+  color: var(--accent-dark);
+}
+.header-sub {
+  margin: 0;
+  color: var(--text-soft);
+  font-weight: 300;
+}
+
+/* Layout */
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+.section-title {
+  font-family: "Nanum Myeongjo", serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 20px;
+  color: var(--accent-dark);
+}
+
+/* Card / form */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+  margin-bottom: 48px;
+}
+.field { margin-bottom: 20px; }
+.field label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.req { color: var(--danger); }
+.optional, .hint { color: var(--text-soft); font-weight: 400; }
+.hint { font-size: 0.8rem; margin: 6px 0 0; }
+
+input[type="text"],
+input[type="password"],
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: #fdfcfa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(122, 106, 82, 0.12);
+}
+textarea { resize: vertical; }
+input[type="file"] { font-size: 0.9rem; color: var(--text-soft); }
+
+.image-preview {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.image-preview img {
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-dark);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.05s;
+}
+.submit-btn:hover { background: #4a3f30; }
+.submit-btn:active { transform: translateY(1px); }
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.form-error {
+  margin: 14px 0 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+/* Tributes */
+.tributes-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.tributes-head .section-title { margin: 0; }
+.count-badge {
+  background: #e7ddcb;
+  color: var(--accent-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 12px;
+  border-radius: 999px;
+}
+.tributes-grid { display: flex; flex-direction: column; gap: 18px; }
+
+.tribute {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  animation: fade-in 0.4s ease;
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.tribute-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.tribute-name {
+  font-family: "Nanum Myeongjo", serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--accent-dark);
+}
+.tribute-date { font-size: 0.8rem; color: var(--text-soft); white-space: nowrap; }
+.tribute-message { margin: 0; white-space: pre-wrap; word-break: break-word; }
+.tribute-image {
+  margin-top: 14px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.tribute-actions { margin-top: 14px; text-align: right; }
+.delete-btn {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text-soft);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.delete-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+.empty-state {
+  text-align: center;
+  color: var(--text-soft);
+  padding: 40px 0;
+}
+
+/* Footer */
+.site-footer {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-soft);
+  font-family: "Nanum Myeongjo", serif;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 560px) {
+  .header-title { font-size: 2rem; }
+  .card { padding: 24px 20px; }
+  .tribute { padding: 20px; }
+}

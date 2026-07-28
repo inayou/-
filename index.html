@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>추모 공간</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="header-kicker">그리운 이를 기억하며</p>
+      <h1 class="header-title">추모 공간</h1>
+      <p class="header-sub">따뜻한 마음을 담아 추모의 글을 남겨 주세요.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 글쓰기 -->
+    <section class="card write-card" aria-label="추모글 작성">
+      <h2 class="section-title">추모의 글 남기기</h2>
+      <form id="tribute-form" class="tribute-form">
+        <div class="field">
+          <label for="name">이름 <span class="req">*</span></label>
+          <input type="text" id="name" name="name" maxlength="30" placeholder="이름 또는 관계 (예: 친구 OOO)" required />
+        </div>
+
+        <div class="field">
+          <label for="message">추모의 글 <span class="req">*</span></label>
+          <textarea id="message" name="message" rows="5" maxlength="2000" placeholder="전하고 싶은 마음을 남겨 주세요." required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="image">사진 첨부 <span class="optional">(선택)</span></label>
+          <input type="file" id="image" name="image" accept="image/*" />
+          <div id="image-preview" class="image-preview" hidden>
+            <img id="preview-img" alt="첨부 이미지 미리보기" />
+            <button type="button" id="remove-image" class="link-btn">제거</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">삭제용 비밀번호 <span class="req">*</span></label>
+          <input type="password" id="password" name="password" maxlength="50" placeholder="글을 삭제할 때 사용할 비밀번호" required />
+          <p class="hint">이 비밀번호는 나중에 글을 삭제할 때 필요합니다.</p>
+        </div>
+
+        <button type="submit" id="submit-btn" class="submit-btn">추모글 남기기</button>
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <!-- 목록 -->
+    <section class="tributes-section" aria-label="추모글 목록">
+      <div class="tributes-head">
+        <h2 class="section-title">추모의 글</h2>
+        <span id="count" class="count-badge">0</span>
+      </div>
+      <div id="tributes" class="tributes-grid" aria-live="polite">
+        <p id="loading" class="empty-state">불러오는 중…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>삼가 고인의 명복을 빕니다.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
