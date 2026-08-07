@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>관리자 · 추모 공간</title>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EFE7;--card:#FCF9F3;--ink:#2A251E;--ink-soft:#6E6557;--ink-faint:#9B9384;
+    --line:#E4DBCC;--amber:#D49A45;--amber-deep:#B97C2E;--umber:#5A4E3D;--sage:#74815F;
+    --danger:#B4462F;--shadow:rgba(58,48,32,0.10);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans KR",sans-serif;line-height:1.7;}
+  h1,h2,h3{font-family:"Gowun Batang",serif;}
+  .wrap{max-width:820px;margin:0 auto;padding:32px 20px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;}
+  .topbar h1{font-size:1.5rem;margin:0;color:var(--umber);}
+  .muted{color:var(--ink-soft);font-size:.88rem;}
+  .btn{border:none;border-radius:10px;padding:11px 16px;cursor:pointer;font-family:inherit;font-size:.92rem;font-weight:500;transition:.15s;}
+  .btn.primary{background:var(--umber);color:#fdf8ee;width:100%;padding:13px;}
+  .btn.primary:hover{background:#473d2e;}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft);}
+  .btn.ghost:hover{border-color:var(--amber);color:var(--amber-deep);}
+  .btn.del{background:transparent;border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;font-size:.82rem;border-radius:8px;}
+  .btn.del:hover{border-color:var(--danger);color:var(--danger);}
+
+  /* login */
+  .login{max-width:380px;margin:8vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px 30px;box-shadow:0 10px 30px var(--shadow);}
+  .login h1{font-size:1.4rem;margin:0 0 6px;color:var(--umber);text-align:center;}
+  .login p{margin:0 0 22px;text-align:center;}
+  label{display:block;font-size:.82rem;color:var(--umber);margin:0 0 6px;font-weight:500;}
+  input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fdfcfa;font-family:inherit;font-size:.95rem;margin-bottom:16px;}
+  input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,154,69,.15);}
+  .err{color:var(--danger);font-size:.85rem;margin:4px 0 14px;min-height:1em;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tab{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:8px 16px;cursor:pointer;font-size:.88rem;color:var(--ink-soft);}
+  .tab.on{background:#FBF1DD;border-color:var(--amber);color:var(--amber-deep);font-weight:600;}
+
+  .item{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:12px;padding:16px 18px;margin-bottom:14px;box-shadow:0 4px 14px var(--shadow);}
+  .item .head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .item .who{font-weight:700;}
+  .item .rel{font-size:.74rem;color:#fff;background:var(--sage);padding:2px 8px;border-radius:16px;}
+  .item .when{color:var(--ink-faint);font-size:.78rem;}
+  .item .head .btn{margin-left:auto;}
+  .item .body{white-space:pre-wrap;color:var(--ink);font-size:.95rem;}
+  .item .media img{max-width:130px;border-radius:8px;border:1px solid var(--line);margin-top:10px;}
+  .item .kv{font-size:.9rem;color:var(--ink-soft);}
+  .item .kv b{color:var(--ink);font-weight:600;}
+  .empty{color:var(--ink-faint);text-align:center;padding:40px 0;}
+  .count{font-size:.85rem;color:var(--ink-soft);margin:0 0 14px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+
+  <!-- 로그인 -->
+  <div id="loginView" class="login">
+    <h1>관리자 로그인</h1>
+    <p class="muted">추모 공간 관리 페이지입니다.</p>
+    <form id="loginForm">
+      <label for="email">이메일</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="pw">비밀번호</label>
+      <input type="password" id="pw" autocomplete="current-password" required />
+      <div class="err" id="loginErr"></div>
+      <button class="btn primary" type="submit">로그인</button>
+    </form>
+  </div>
+
+  <!-- 관리 -->
+  <div id="adminView" class="wrap hidden">
+    <div class="topbar">
+      <h1>추모 공간 관리</h1>
+      <div>
+        <span class="muted" id="whoami"></span>
+        <button class="btn ghost" id="logoutBtn">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" data-tab="mem">추모글</button>
+      <button class="tab" data-tab="sub">알림 신청자</button>
+    </div>
+
+    <section id="memTab">
+      <p class="count" id="memCount">불러오는 중…</p>
+      <div id="memList"></div>
+    </section>
+
+    <section id="subTab" class="hidden">
+      <p class="count" id="subCount">불러오는 중…</p>
+      <div id="subList"></div>
+    </section>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, getDocs, deleteDoc, doc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref as sRef, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNhkjyOJ9-27PVrJG1zDxdL2rg2DBIH5U",
+  authDomain: "leesunghyun.firebaseapp.com",
+  projectId: "leesunghyun",
+  storageBucket: "leesunghyun.firebasestorage.app",
+  messagingSenderId: "513419702985",
+  appId: "1:513419702985:web:16808c91340e29baa01318",
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const loginView = document.getElementById("loginView");
+const adminView = document.getElementById("adminView");
+const loginForm = document.getElementById("loginForm");
+const loginErr = document.getElementById("loginErr");
+const whoami = document.getElementById("whoami");
+
+function esc(s){const d=document.createElement("div");d.textContent=(s==null?"":s);return d.innerHTML;}
+function fmt(ts){ if(!ts||!ts.toDate) return ""; const d=ts.toDate(); return d.toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
+
+/* ---- 로그인 ---- */
+loginForm.addEventListener("submit", async (e)=>{
+  e.preventDefault(); loginErr.textContent="";
+  try{
+    await signInWithEmailAndPassword(auth, document.getElementById("email").value.trim(), document.getElementById("pw").value);
+  }catch(err){
+    loginErr.textContent = "로그인 실패: 이메일 또는 비밀번호를 확인하세요.";
+    console.error(err);
+  }
+});
+document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth));
+
+/* ---- 탭 ---- */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    t.classList.add("on");
+    const tab=t.dataset.tab;
+    document.getElementById("memTab").classList.toggle("hidden", tab!=="mem");
+    document.getElementById("subTab").classList.toggle("hidden", tab!=="sub");
+  });
+});
+
+/* ---- 인증 상태 ---- */
+let memUnsub=null;
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    loginView.classList.add("hidden");
+    adminView.classList.remove("hidden");
+    whoami.textContent = user.email + " · ";
+    watchTributes();
+    loadSubscribers();
+  }else{
+    if(memUnsub){ memUnsub(); memUnsub=null; }
+    adminView.classList.add("hidden");
+    loginView.classList.remove("hidden");
+  }
+});
+
+/* ---- 추모글 (실시간) ---- */
+const memList=document.getElementById("memList");
+const memCount=document.getElementById("memCount");
+function watchTributes(){
+  if(memUnsub) return;
+  const q=query(collection(db,"tributes"), orderBy("createdAt","desc"));
+  memUnsub = onSnapshot(q, (snap)=>{
+    memCount.textContent = "총 " + snap.size + "개";
+    if(snap.empty){ memList.innerHTML='<p class="empty">아직 남겨진 글이 없습니다.</p>'; return; }
+    memList.innerHTML="";
+    snap.forEach(d=>{
+      const m=d.data();
+      const el=document.createElement("div"); el.className="item";
+      let media = m.imageUrl ? '<div class="media"><img src="'+esc(m.imageUrl)+'" alt="첨부"/></div>' : "";
+      let vid = m.videoUrl ? ' · <a href="'+esc(m.videoUrl)+'" target="_blank" rel="noopener">영상</a>' : "";
+      el.innerHTML =
+        '<div class="head"><span class="who">'+esc(m.name)+'</span>'+
+        (m.relationship?'<span class="rel">'+esc(m.relationship)+'</span>':'')+
+        '<span class="when">'+fmt(m.createdAt)+vid+'</span>'+
+        '<button class="btn del">삭제</button></div>'+
+        '<div class="body">'+esc(m.message)+'</div>'+media;
+      el.querySelector(".del").addEventListener("click", ()=>delTribute(d.id, m));
+      memList.appendChild(el);
+    });
+  }, (err)=>{ memCount.textContent="불러오기 실패 (권한 확인 필요)"; console.error(err); });
+}
+async function delTribute(id, m){
+  if(!confirm('"'+ (m.name||'') +'" 님의 글을 삭제할까요? 되돌릴 수 없습니다.')) return;
+  try{
+    if(m.imagePath){ try{ await deleteObject(sRef(storage, m.imagePath)); }catch(e){} }
+    await deleteDoc(doc(db,"tributes",id));
+  }catch(e){ alert("삭제 실패: "+e.message); console.error(e); }
+}
+
+/* ---- 알림 신청자 ---- */
+const subList=document.getElementById("subList");
+const subCount=document.getElementById("subCount");
+async function loadSubscribers(){
+  try{
+    const snap = await getDocs(query(collection(db,"subscribers"), orderBy("createdAt","desc")));
+    subCount.textContent = "총 " + snap.size + "명";
+    if(snap.empty){ subList.innerHTML='<p class="empty">아직 신청자가 없습니다.</p>'; return; }
+    subList.innerHTML="";
+    snap.forEach(d=>{
+      const s=d.data();
+      const days=[]; if(s.notify_birthday)days.push("생신"); if(s.notify_memorial)days.push("기일");
+      const el=document.createElement("div"); el.className="item";
+      el.innerHTML =
+        '<div class="head"><span class="who">'+esc(s.name||"(이름 없음)")+'</span>'+
+        '<span class="when">'+fmt(s.createdAt)+'</span>'+
+        '<button class="btn del">삭제</button></div>'+
+        '<div class="kv">이메일: <b>'+esc(s.email||"-")+'</b> · 휴대폰: <b>'+esc(s.phone||"-")+'</b> · 알림: <b>'+(days.join("·")||"-")+'</b></div>';
+      el.querySelector(".del").addEventListener("click", async ()=>{
+        if(!confirm("이 신청자를 삭제할까요?")) return;
+        try{ await deleteDoc(doc(db,"subscribers",d.id)); loadSubscribers(); }catch(e){ alert("삭제 실패: "+e.message); }
+      });
+      subList.appendChild(el);
+    });
+  }catch(err){ subCount.textContent="불러오기 실패 (권한/규칙 확인 필요)"; console.error(err); }
+}
+</script>
+</body>
+</html>
