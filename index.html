@@ -258,6 +258,39 @@
 
   .empty{color:var(--ink-faint);text-align:center;padding:34px 0;font-size:.95rem;}
 
+  /* ---------- MEMORY VIEW (pager / list) ---------- */
+  .hidden{display:none;}
+  .mem-controls{display:flex;gap:8px;margin-bottom:16px;}
+  .seg{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:8px 16px;cursor:pointer;font-family:inherit;font-size:.86rem;color:var(--ink-soft);transition:.15s;}
+  .seg.on{background:#FBF1DD;border-color:var(--amber);color:var(--amber-deep);font-weight:600;}
+  #readCard .mcard{margin:0;}
+  .pager{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;}
+  .pgbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--umber);font-size:1.4rem;cursor:pointer;transition:.15s;line-height:1;}
+  .pgbtn:hover:not(:disabled){border-color:var(--amber);color:var(--amber-deep);}
+  .pgbtn:disabled{opacity:.35;cursor:default;}
+  .pgind{font-family:"Gowun Batang",serif;color:var(--umber);font-size:1rem;min-width:70px;text-align:center;}
+  .lrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:10px;cursor:pointer;font-family:inherit;transition:.15s;}
+  .lrow:hover{border-color:var(--amber);}
+  .lthumb{width:46px;height:46px;border-radius:8px;object-fit:cover;flex:none;border:1px solid var(--line);}
+  .lthumb.ph{background:linear-gradient(145deg,#F1E7D3,#E7D8BB);}
+  .lmeta{display:flex;flex-direction:column;min-width:0;flex:1;}
+  .lname{font-weight:700;font-size:.92rem;color:var(--ink);}
+  .lsnip{font-size:.82rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ldate{font-size:.74rem;color:var(--ink-faint);flex:none;}
+  .zoom{cursor:zoom-in;}
+
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox{position:fixed;inset:0;z-index:100;background:rgba(20,16,10,.92);display:flex;align-items:center;justify-content:center;}
+  .lightbox.hidden{display:none;}
+  .lb-img{max-width:92vw;max-height:86vh;border-radius:8px;box-shadow:0 10px 50px rgba(0,0,0,.5);user-select:none;-webkit-user-drag:none;}
+  .lb-close{position:absolute;top:16px;right:18px;width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:1.2rem;cursor:pointer;}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:2rem;cursor:pointer;line-height:1;}
+  .lb-nav:hover,.lb-close:hover{background:rgba(255,255,255,.28);}
+  .lb-prev{left:14px;}
+  .lb-next{right:14px;}
+  .lb-count{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:.86rem;letter-spacing:.05em;background:rgba(0,0,0,.35);padding:5px 14px;border-radius:20px;}
+  @media(max-width:560px){ .lb-nav{width:44px;height:44px;font-size:1.6rem;} .lb-prev{left:6px;} .lb-next{right:6px;} }
+
   @media(max-width:840px){
     .mem-grid,.remind-grid{grid-template-columns:1fr;}
     .mem-grid .panel{position:static;}
@@ -344,7 +377,21 @@
 
         <!-- cards -->
         <div>
-          <div class="mem-list" id="memList"></div>
+          <div class="mem-controls">
+            <button type="button" id="viewReadBtn" class="seg on">한 편씩 보기</button>
+            <button type="button" id="viewListBtn" class="seg">목록 보기</button>
+          </div>
+          <div id="readMode">
+            <div id="readCard"></div>
+            <div class="pager" id="pager">
+              <button type="button" id="prevBtn" class="pgbtn" aria-label="이전 글">‹</button>
+              <span id="pageInd" class="pgind">0 / 0</span>
+              <button type="button" id="nextBtn" class="pgbtn" aria-label="다음 글">›</button>
+            </div>
+          </div>
+          <div id="listMode" class="hidden">
+            <div id="listRows"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -412,6 +459,14 @@
 
   <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
 
+  <div class="lightbox hidden" id="lightbox">
+    <button class="lb-close" id="lbClose" aria-label="닫기">✕</button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="이전 사진">‹</button>
+    <img class="lb-img" id="lbImg" alt="첨부 사진" />
+    <button class="lb-nav lb-next" id="lbNext" aria-label="다음 사진">›</button>
+    <div class="lb-count" id="lbCount"></div>
+  </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -449,68 +504,158 @@ document.querySelectorAll(".reveal").forEach((el, i) => {
 /* ---- DOM ---- */
 const strip = document.getElementById("candleStrip");
 const lightCount = document.getElementById("lightCount");
-const memList = document.getElementById("memList");
-let memCount = 0;
+const readMode = document.getElementById("readMode");
+const listMode = document.getElementById("listMode");
+const readCard = document.getElementById("readCard");
+const listRows = document.getElementById("listRows");
+const pager = document.getElementById("pager");
+const pageInd = document.getElementById("pageInd");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const viewReadBtn = document.getElementById("viewReadBtn");
+const viewListBtn = document.getElementById("viewListBtn");
+
+let candleN = 0;
+let memories = [];
+let currentIndex = 0;
+let photos = [];
+let lbIndex = 0;
 
 function esc(s) { const d = document.createElement("div"); d.textContent = (s == null ? "" : s); return d.innerHTML; }
 function fmt(d) { return d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate(); }
 
+/* ---- 촛불 ---- */
 function lightCandle() {
   const c = document.createElement("div");
   c.className = "candle";
   c.innerHTML = '<div class="flame"></div><div class="wick"></div><div class="stick"></div>';
   strip.appendChild(c);
-  memCount++; lightCount.textContent = memCount;
+  candleN++; lightCount.textContent = candleN;
 }
-function resetCandles() { strip.innerHTML = ""; memCount = 0; lightCount.textContent = "0"; }
+function resetCandles() { strip.innerHTML = ""; candleN = 0; lightCount.textContent = "0"; }
 
-function renderMem(m) {
-  const card = document.createElement("div");
-  card.className = "mcard";
+/* ---- 카드 HTML ---- */
+function cardInner(m) {
   let media = "";
-  if (m.photo || m.video) {
+  if (m.imageUrl || m.videoUrl) {
     media = '<div class="media">';
-    if (m.photo) media += '<img src="' + esc(m.photo) + '" alt="첨부 사진" loading="lazy" />';
-    if (m.video) media += '<a class="vlink" href="' + esc(m.video) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>영상 보기</a>';
+    if (m.imageUrl) media += '<img class="zoom" data-pi="' + photos.indexOf(m.imageUrl) + '" src="' + esc(m.imageUrl) + '" alt="첨부 사진" loading="lazy" />';
+    if (m.videoUrl) media += '<a class="vlink" href="' + esc(m.videoUrl) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>영상 보기</a>';
     media += '</div>';
   }
-  card.innerHTML =
-    '<div class="top"><span class="who">' + esc(m.name) + '</span>' +
+  return '<div class="top"><span class="who">' + esc(m.name) + '</span>' +
     (m.rel ? '<span class="rel">' + esc(m.rel) + '</span>' : '') +
     '<span class="when">' + esc(m.when) + '</span></div>' +
     '<div class="body">' + esc(m.text) + '</div>' + media;
-  memList.insertBefore(card, memList.firstChild);
 }
 
-function refreshEmpty() {
-  let ex = document.getElementById("emptyMsg");
-  if (memCount === 0) {
-    if (!ex) {
-      const p = document.createElement("p");
-      p.id = "emptyMsg"; p.className = "empty";
-      p.textContent = "아직 남겨진 기억이 없습니다. 첫 번째 불빛을 밝혀주세요.";
-      memList.appendChild(p);
-    }
-  } else if (ex) { ex.remove(); }
+/* ---- 한 편씩 보기 ---- */
+function renderRead() {
+  if (!memories.length) {
+    readCard.innerHTML = '<p class="empty">아직 남겨진 기억이 없습니다.<br>첫 번째 불빛을 밝혀주세요.</p>';
+    pager.style.display = "none";
+    return;
+  }
+  pager.style.display = "";
+  if (currentIndex < 0) currentIndex = 0;
+  if (currentIndex > memories.length - 1) currentIndex = memories.length - 1;
+  const card = document.createElement("div");
+  card.className = "mcard";
+  card.innerHTML = cardInner(memories[currentIndex]);
+  readCard.innerHTML = ""; readCard.appendChild(card);
+  pageInd.textContent = (currentIndex + 1) + " / " + memories.length;
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === memories.length - 1;
 }
 
-/* ---- 실시간 불러오기 ---- */
-const memQuery = query(memoriesCol, orderBy("createdAt", "asc"));
-onSnapshot(memQuery, (snap) => {
-  memList.innerHTML = ""; resetCandles();
-  snap.forEach((docSnap) => {
-    const r = docSnap.data();
-    lightCandle();
-    renderMem({
-      name: r.name,
-      rel: r.relationship,
-      text: r.message,
-      photo: r.imageUrl,
-      video: r.videoUrl,
-      when: (r.createdAt && r.createdAt.toDate) ? fmt(r.createdAt.toDate()) : "",
+/* ---- 목록 보기 ---- */
+function renderList() {
+  if (!memories.length) { listRows.innerHTML = '<p class="empty">아직 남겨진 기억이 없습니다.</p>'; return; }
+  listRows.innerHTML = "";
+  memories.forEach((m, idx) => {
+    const row = document.createElement("button");
+    row.type = "button"; row.className = "lrow";
+    const snip = (m.text || "").replace(/\s+/g, " ").trim();
+    const thumb = m.imageUrl
+      ? '<img class="lthumb zoom" data-pi="' + photos.indexOf(m.imageUrl) + '" src="' + esc(m.imageUrl) + '" alt="" loading="lazy"/>'
+      : '<span class="lthumb ph"></span>';
+    row.innerHTML = thumb +
+      '<span class="lmeta"><span class="lname">' + esc(m.name) + (m.rel ? ' · ' + esc(m.rel) : '') + '</span>' +
+      '<span class="lsnip">' + esc(snip.slice(0, 46)) + (snip.length > 46 ? '…' : '') + '</span></span>' +
+      '<span class="ldate">' + esc(m.when) + '</span>';
+    row.addEventListener("click", (e) => {
+      if (e.target.closest(".zoom")) return;
+      currentIndex = idx; showRead(); renderRead();
     });
+    listRows.appendChild(row);
   });
-  refreshEmpty();
+}
+
+function showRead() {
+  readMode.classList.remove("hidden"); listMode.classList.add("hidden");
+  viewReadBtn.classList.add("on"); viewListBtn.classList.remove("on");
+}
+function showList() {
+  renderList();
+  listMode.classList.remove("hidden"); readMode.classList.add("hidden");
+  viewListBtn.classList.add("on"); viewReadBtn.classList.remove("on");
+}
+viewReadBtn.addEventListener("click", showRead);
+viewListBtn.addEventListener("click", showList);
+prevBtn.addEventListener("click", () => { if (currentIndex > 0) { currentIndex--; renderRead(); } });
+nextBtn.addEventListener("click", () => { if (currentIndex < memories.length - 1) { currentIndex++; renderRead(); } });
+
+/* ---- 사진 라이트박스 ---- */
+const lb = document.getElementById("lightbox");
+const lbImg = document.getElementById("lbImg");
+const lbCount = document.getElementById("lbCount");
+function openLB(i) {
+  if (!photos.length) return;
+  lbIndex = ((i % photos.length) + photos.length) % photos.length;
+  lbImg.src = photos[lbIndex];
+  lbCount.textContent = (lbIndex + 1) + " / " + photos.length;
+  lb.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+function closeLB() { lb.classList.add("hidden"); lbImg.src = ""; document.body.style.overflow = ""; }
+function lbNav(d) { openLB(lbIndex + d); }
+document.getElementById("lbClose").addEventListener("click", closeLB);
+document.getElementById("lbPrev").addEventListener("click", (e) => { e.stopPropagation(); lbNav(-1); });
+document.getElementById("lbNext").addEventListener("click", (e) => { e.stopPropagation(); lbNav(1); });
+lb.addEventListener("click", (e) => { if (e.target === lb) closeLB(); });
+document.addEventListener("keydown", (e) => {
+  if (lb.classList.contains("hidden")) return;
+  if (e.key === "Escape") closeLB();
+  else if (e.key === "ArrowLeft") lbNav(-1);
+  else if (e.key === "ArrowRight") lbNav(1);
+});
+document.addEventListener("click", (e) => {
+  const z = e.target.closest(".zoom");
+  if (z) { const pi = parseInt(z.dataset.pi, 10); if (!isNaN(pi) && pi >= 0) openLB(pi); }
+});
+let touchX = 0;
+lb.addEventListener("touchstart", (e) => { touchX = e.changedTouches[0].clientX; }, { passive: true });
+lb.addEventListener("touchend", (e) => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 40) lbNav(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+/* ---- 실시간 불러오기 (최신순) ---- */
+const memQuery = query(memoriesCol, orderBy("createdAt", "desc"));
+onSnapshot(memQuery, (snap) => {
+  memories = snap.docs.map((docSnap) => {
+    const r = docSnap.data();
+    return {
+      id: docSnap.id, name: r.name, rel: r.relationship, text: r.message,
+      imageUrl: r.imageUrl || "", videoUrl: r.videoUrl || "",
+      when: (r.createdAt && r.createdAt.toDate) ? fmt(r.createdAt.toDate()) : "",
+    };
+  });
+  photos = memories.filter((m) => m.imageUrl).map((m) => m.imageUrl);
+  resetCandles();
+  for (let k = 0; k < memories.length; k++) lightCandle();
+  if (currentIndex > memories.length - 1) currentIndex = Math.max(0, memories.length - 1);
+  if (!listMode.classList.contains("hidden")) renderList(); else renderRead();
 }, (e) => { console.error(e); toast("기억을 불러오지 못했습니다. 잠시 후 새로고침 해주세요."); });
 
 /* ---- 사진 첨부 ---- */
@@ -560,6 +705,7 @@ addMemBtn.addEventListener("click", async function () {
     });
     toast("불빛이 켜졌습니다. 소중한 기억 감사합니다.");
     clearMemForm();
+    currentIndex = 0; showRead();
   } catch (e) {
     console.error(e); toast("등록에 실패했습니다. 다시 시도해주세요.");
   } finally {
